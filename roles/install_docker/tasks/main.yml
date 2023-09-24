@@ -1,0 +1,99 @@
+---
+  - name: check connection
+    ping:
+
+
+  - name: Update apt cache
+    apt:
+      update_cache: yes
+
+  
+  - name: Install Zsh
+    apt: 
+      name: zsh
+      
+  
+  - name: Download Oh My Zsh install script
+    uri:
+      url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+      dest: /tmp/install_ohmyzsh.sh
+
+
+  - name: Run Oh My Zsh install script
+    command: sh /tmp/install_ohmyzsh.sh
+    args:
+      creates: ~/.oh-my-zsh
+
+
+  - name: Copy .zshrc file
+    copy:
+      src: ".zshrc"
+      dest: "/root/.zshrc"
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: 0644
+
+
+  - name: Set Zsh as default shell
+    shell: chsh -s /bin/zsh root
+
+
+
+
+  - name: Install dependencies for Docker
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - curl
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+
+
+  - name: Download Docker GPG key
+    uri:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: /tmp/docker.gpg
+
+
+  - name: Import Docker GPG key
+    shell: gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg < /tmp/docker.gpg
+    args:
+      creates: /usr/share/keyrings/docker-archive-keyring.gpg
+
+
+  - name: Remove temporary GPG key file
+    file:
+      path: /tmp/docker.gpg
+      state: absent
+
+
+  - name: Add Docker repository
+    apt_repository:
+      repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+      state: present
+
+
+  - name: Update apt cache
+    apt:
+      update_cache: yes
+
+
+  - name: Install docker packages
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose
+
+
+  - name: Add user to docker group
+    user:
+      name: "{{ ansible_user }}"
+      groups: docker
+      append: yes

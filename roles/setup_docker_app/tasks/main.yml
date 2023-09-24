@@ -1,0 +1,38 @@
+---
+  - name: check connection with remote host
+    ping:
+
+
+  - name: Create folder for files
+    file:
+      path: "/home/docker_app"
+      state: directory
+      mode: 0755
+  
+
+  - name: Copy files for start container
+    copy: 
+      src: "{{item}}"
+      dest: "/home/docker_app"
+    loop:
+      - docker-compose.yml
+      - Dockerfile  
+      - main.php
+      - default.conf
+      - index.html
+
+  - name: Generate new nginx.conf
+    template: src=default.j2 dest={{old_nginx}}/default.conf mode=0644
+
+  - name: Generate new index.html
+    template: src=index.j2 dest={{old_nginx}}/index.html mode=0644  
+
+
+
+
+  - name: Start Docker Compose
+    docker_compose:
+      project_src: /home/docker_app
+      state: present  
+      files:
+        - docker-compose.yml

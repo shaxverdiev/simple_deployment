@@ -1,0 +1,32 @@
+version: '2.21'
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      # - ./default.conf:/etc/nginx/conf.d/default.conf  # enable proxy 80 -> 8000
+      - ./index.html:/usr/share/nginx/html/index.html
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    restart: always
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: awesome_root_password
+      MYSQL_DATABASE: awesome_database
+      MYSQL_USER: awesome_users
+      MYSQL_PASSWORD: awesome_user_password
+    ports:
+      - 3306:3306
+
+
+

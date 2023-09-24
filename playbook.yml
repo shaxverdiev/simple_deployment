@@ -1,0 +1,11 @@
+---
+- name: Deploying test application on a remote server
+  gather_facts: true
+  hosts : all 
+  become: yes 
+
+  roles:
+    - install_docker
+    - setup_docker_app 
+
+ 
